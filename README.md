@@ -1,5 +1,5 @@
 ﻿# ProdIQ - Production Planner AI Agent
-
+Loom Video Link - https://www.loom.com/share/dba6b4b722a84944b26d8c48b4530014
 ![ProdIQ Logo](frontend/src/assets/logo.svg)
 
 A practical AI operations copilot for production teams.
