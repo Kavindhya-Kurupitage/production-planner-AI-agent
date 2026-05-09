@@ -1,0 +1,52 @@
+# Production Planner Agent - Cursor Rules
+
+Purpose: keep changes production-safe, consistent, and easy to review across the FastAPI backend and React frontend.
+
+## 1) Architecture and boundaries
+- Respect current project structure:
+  - Frontend: `frontend/src/pages`, `frontend/src/components`, `frontend/src/hooks`, `frontend/src/store`, `frontend/src/lib`, `frontend/src/types`.
+  - Backend: `backend/app/api`, `backend/app/agent`, `backend/app/models`, `backend/app/schemas`, `backend/app/core`, `backend/app/services`.
+- Keep business logic out of UI components and FastAPI route handlers.
+- Route handlers should orchestrate, not implement core logic.
+
+## 2) Type safety and contracts
+- Use strict TypeScript and explicit Python typing.
+- Avoid `any` unless there is a documented reason.
+- Preserve API contracts between backend schemas and frontend types.
+- Validate inbound backend payloads with schema models before processing.
+
+## 3) Data and API access patterns
+- Frontend HTTP calls should go through shared API client and hooks (`frontend/src/lib/axios.ts` + domain hooks).
+- Do not add ad-hoc API calls directly in presentational UI components.
+- Backend third-party AI calls must stay centralized under `backend/app/agent`.
+
+## 4) Security and secrets
+- Never hardcode secrets, tokens, or credentials.
+- Use environment variables (`GROQ_API_KEY`, `DATABASE_URL`, `JWT_SECRET_KEY`, etc.).
+- Keep `.env` out of commits; maintain `.env.example` with safe placeholders only.
+
+## 5) UI/UX consistency
+- Follow existing dark + accent design system (ProdIQ style) and current responsive behavior.
+- Reuse shared components before introducing new ones.
+- Preserve accessibility basics: semantic elements, labels, and button/link intent.
+
+## 6) Benchmark and scoring safety
+- Treat benchmark logic as objective and deterministic by default.
+- Do not silently alter scoring scales, caps, or layer weights unless explicitly requested.
+- If changing benchmark behavior, document the rationale clearly in code and README.
+
+## 7) Docker and environment compatibility
+- Keep Docker Compose flows first-class for local setup.
+- Avoid machine-specific assumptions in code paths and docs.
+- Ensure updates remain compatible with Windows + Docker Desktop workflows.
+
+## 8) Quality checks before completion
+- For frontend changes: run build/lint checks when possible.
+- For backend changes: run compile/lint/test checks when possible.
+- If a check cannot be run, state what remains and how to run it.
+
+## 9) Editing discipline
+- Make minimal, focused diffs.
+- Do not refactor unrelated areas during feature/bug tasks.
+- Do not remove or overwrite user content unless explicitly requested.
+- Update docs (`README.md`) when behavior, setup, or workflows change.

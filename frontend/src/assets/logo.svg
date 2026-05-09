@@ -1,0 +1,12 @@
+<svg width="170" height="36" viewBox="0 0 170 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.5" y="0.5" width="35" height="35" rx="8" fill="#141414" stroke="#1E1E1E" />
+  <path d="M9 24L18 14L27 9" stroke="#F5C518" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M9 24L27 24" stroke="#F5C518" stroke-opacity="0.45" stroke-width="1.2" stroke-linecap="round" />
+  <circle cx="9" cy="24" r="2.6" fill="#F5C518" />
+  <circle cx="18" cy="14" r="2.6" fill="#F5C518" />
+  <circle cx="27" cy="9" r="2.6" fill="#F5C518" />
+  <text x="45" y="24" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="-0.5px">
+    <tspan fill="#FFFFFF">Prod</tspan>
+    <tspan fill="#F5C518">IQ</tspan>
+  </text>
+</svg>
