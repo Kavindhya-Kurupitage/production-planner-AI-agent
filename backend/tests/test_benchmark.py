@@ -71,10 +71,13 @@ class BenchmarkFailureTests(unittest.IsolatedAsyncioTestCase):
             return {"answer": "Widget A has demand of 80 and capacity of 100."}
 
         async def _failing_agent_response(
-            _question: str,
-            _company_id: int,
-            _db: _DbSession,
+            question: str,
+            company_id: int,
+            db: _DbSession,
         ) -> dict[str, object]:
+            self.assertTrue(question)
+            self.assertEqual(company_id, 1)
+            self.assertIsInstance(db, _DbSession)
             raise RuntimeError("agent timeout")
 
         benchmark_module.get_plain_groq_response = _successful_plain_response
