@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-from typing import Any
+from typing import Any, NoReturn
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -286,6 +286,15 @@ def _finalize_score(layer_scores: dict[str, int]) -> dict[str, Any]:
     }
 
 
+def _raise_benchmark_step_failure(step_label: str, exc: Exception) -> NoReturn:
+    if isinstance(exc, HTTPException):
+        raise exc
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=f"Benchmark failed while running {step_label}. No benchmark result was saved.",
+    ) from exc
+
+
 async def score_response(
     question: str,
     response: dict[str, Any],
@@ -347,16 +356,7 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
             plain_eval = await score_response(question, plain_response, production_rows)
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Plain model failed on Q{idx}: {exc}")
-            plain_response = {"answer": "Plain model failed due to API rate limits during this run."}
-            plain_eval = _finalize_score(
-                {
-                    "data_specificity": 250,
-                    "bottleneck_accuracy": 250,
-                    "action_specificity": 300,
-                    "completeness": 350,
-                    "consistency": 300,
-                }
-            )
+            _raise_benchmark_step_failure("plain model response", exc)
         await asyncio.sleep(BENCHMARK_CALL_DELAY_SECONDS)
 
         print(f"[benchmark] Question {idx}/5: running full agent")
@@ -365,16 +365,7 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
             agent_eval = await score_response(question, agent_response, production_rows)
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Agent failed on Q{idx}: {exc}")
-            agent_response = {"answer": "Agent run failed due to temporary API throttling."}
-            agent_eval = _finalize_score(
-                {
-                    "data_specificity": 600,
-                    "bottleneck_accuracy": 500,
-                    "action_specificity": 500,
-                    "completeness": 600,
-                    "consistency": 450,
-                }
-            )
+            _raise_benchmark_step_failure("planning agent response", exc)
         await asyncio.sleep(BENCHMARK_CALL_DELAY_SECONDS)
 
         question_results.append(
