@@ -36,14 +36,14 @@ def _parse_csv_upload(csv_file: UploadFile) -> pd.DataFrame:
         csv_bytes = csv_file.file.read(MAX_CSV_UPLOAD_BYTES + 1)
         if len(csv_bytes) > MAX_CSV_UPLOAD_BYTES:
             raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 detail="CSV file is too large. Maximum size is 10 MB.",
             )
         decoded_content = csv_bytes.decode("utf-8-sig")
         dataframe = pd.read_csv(StringIO(decoded_content))
         if len(dataframe.index) > MAX_CSV_UPLOAD_ROWS:
             raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 detail="CSV file has too many rows. Maximum is 50000 rows.",
             )
     except HTTPException:

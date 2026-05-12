@@ -18,7 +18,7 @@ class ProductionCsvUploadParsingTests(unittest.TestCase):
         with self.assertRaises(HTTPException) as exc:
             _parse_csv_upload(upload)
 
-        self.assertEqual(exc.exception.status_code, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        self.assertEqual(exc.exception.status_code, status.HTTP_413_CONTENT_TOO_LARGE)
         self.assertIn("too large", str(exc.exception.detail))
 
     def test_rejects_csv_with_too_many_rows(self) -> None:
@@ -28,7 +28,7 @@ class ProductionCsvUploadParsingTests(unittest.TestCase):
         with self.assertRaises(HTTPException) as exc:
             _parse_csv_upload(_upload_file(csv_content.encode("utf-8")))
 
-        self.assertEqual(exc.exception.status_code, status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+        self.assertEqual(exc.exception.status_code, status.HTTP_413_CONTENT_TOO_LARGE)
         self.assertIn("too many rows", str(exc.exception.detail))
 
     def test_accepts_valid_small_csv(self) -> None:
