@@ -14,6 +14,9 @@ from app.services.csv_column_mapping import REQUIRED_FIELDS, map_production_colu
 
 router = APIRouter(prefix="/companies", tags=["production-data"])
 
+MAX_CSV_UPLOAD_BYTES = 10 * 1024 * 1024
+MAX_CSV_UPLOAD_ROWS = 50_000
+
 
 def _get_user_company_or_404(db: Session, company_id: int, user_id: int) -> Company:
     company = (
@@ -30,9 +33,21 @@ def _parse_csv_upload(csv_file: UploadFile) -> pd.DataFrame:
     if not csv_file.filename or not csv_file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only CSV files are supported.")
     try:
-        csv_bytes = csv_file.file.read()
+        csv_bytes = csv_file.file.read(MAX_CSV_UPLOAD_BYTES + 1)
+        if len(csv_bytes) > MAX_CSV_UPLOAD_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="CSV file is too large. Maximum size is 10 MB.",
+            )
         decoded_content = csv_bytes.decode("utf-8-sig")
         dataframe = pd.read_csv(StringIO(decoded_content))
+        if len(dataframe.index) > MAX_CSV_UPLOAD_ROWS:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="CSV file has too many rows. Maximum is 50000 rows.",
+            )
+    except HTTPException:
+        raise
     except UnicodeDecodeError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
