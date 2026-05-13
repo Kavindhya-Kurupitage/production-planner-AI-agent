@@ -1,65 +1,109 @@
-﻿# ProdIQ - Production Planner AI Agent
-Loom Video Link - https://www.loom.com/share/dba6b4b722a84944b26d8c48b4530014
+<div align="center">
 
+```
+██████╗ ██████╗  ██████╗ ██████╗ ██╗ ██████╗
+██╔══██╗██╔══██╗██╔═══██╗██╔══██╗██║██╔═══██╗
+██████╔╝██████╔╝██║   ██║██║  ██║██║██║   ██║
+██╔═══╝ ██╔══██╗██║   ██║██║  ██║██║██║▄▄ ██║
+██║     ██║  ██║╚██████╔╝██████╔╝██║╚██████╔╝
+╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝ ╚══▀▀═╝
+```
 
-![ProdIQ Logo](frontend/src/assets/logo.svg)
+### **Production Intelligence. Engineered for Operations Teams.**
 
-A practical AI operations copilot for production teams.
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-336791?style=flat-square&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![MIT License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-ProdIQ helps you answer questions like:
-- What breaks first if demand increases?
-- Which products are at stockout risk?
-- What action plan should we execute this week?
+> *A tool-driven AI agent that simulates production scenarios, surfaces bottlenecks, and generates actionable plans — then objectively benchmarks itself against a plain LLM baseline.*
 
-It combines simulation + bottleneck detection + action planning, then benchmarks your tool-driven agent against a plain LLM baseline.
+[▶ Watch Demo](https://www.loom.com/share/dba6b4b722a84944b26d8c48b4530014) · [📖 API Docs](#api-documentation) · [🚀 Quick Start](#one-command-docker-setup)
 
----
-
-## What ProdIQ Does 
-
-1. You upload production data (capacity, demand, stock, lead time).
-2. You ask a scenario question (example: `What if demand increases by 20%?`).
-3. The backend runs tool-based logic to:
-   - simulate demand impact,
-   - detect bottlenecks,
-   - generate prioritized action timeline.
-4. The app shows:
-   - simulation tables,
-   - bottleneck cards,
-   - action plan timeline,
-   - narrative summary,
-   - optional PDF export.
-5. In Benchmark mode, ProdIQ compares:
-   - **Your Agent** (tool + business context),
-   - **Default LLM** (plain answer, no tools/data context).
+</div>
 
 ---
 
-## One-Command Docker Setup
+## ✦ What is ProdIQ?
 
-### 1) Prepare env
+ProdIQ is an **AI operations copilot** built for production teams who need more than generic LLM answers — they need answers grounded in *their data*, *their constraints*, and *their numbers*.
+
+Upload your production CSV. Ask a scenario question. Get a simulation, bottleneck analysis, action plan, and a scored comparison between your agent and a bare LLM — all in one workflow.
+
+---
+
+## ✦ Core Questions ProdIQ Answers
+
+| Question | What ProdIQ Does |
+|---|---|
+| *"What breaks first if demand spikes 20%?"* | Simulates capacity vs. demand across all products |
+| *"Which SKUs are heading for stockout?"* | Detects bottlenecks using stock, lead time & throughput |
+| *"What should my team execute this week?"* | Generates a prioritized, day-by-day action timeline |
+| *"Is our AI agent actually better than ChatGPT here?"* | Runs a 5-layer objective benchmark comparison |
+
+---
+
+## ✦ How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         ProdIQ Workflow                             │
+│                                                                     │
+│   1. UPLOAD        2. ASK              3. AGENT RUNS                │
+│   ──────────       ──────────          ──────────────               │
+│   CSV with         Scenario            simulate_demand()            │
+│   capacity,    ──► question        ──► detect_bottlenecks()         │
+│   demand,          in plain            generate_action_plan()       │
+│   stock,           English                    │                     │
+│   lead time                                   ▼                     │
+│                                      4. YOU SEE                     │
+│                                      ──────────                     │
+│                                      • Simulation tables            │
+│                                      • Bottleneck cards             │
+│                                      • Action timeline              │
+│                                      • Narrative summary            │
+│                                      • PDF export                   │
+│                                      • Benchmark scores             │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## ✦ One-Command Docker Setup
+
+> ⚡ Entire stack — frontend, backend, database — starts in one command.
+
+### Step 1 — Configure environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and set at least:
-- `GROQ_API_KEY` (user can use OpenAI/ Anthropic API keys as well)
-- `JWT_SECRET_KEY` (strong random value)
+Open `.env` and set the required values:
 
-### 2) Start everything
+```env
+GROQ_API_KEY=gsk_...              # or OpenAI / Anthropic key
+JWT_SECRET_KEY=your-random-secret
+POSTGRES_PASSWORD=your-db-password
+```
+
+### Step 2 — Launch
 
 ```bash
 docker compose up --build
 ```
 
-That starts:
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend API: [http://localhost:8000](http://localhost:8000)
-- API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
-- Health: [http://localhost:8000/health](http://localhost:8000/health)
+### Step 3 — Access
 
-### 3) Stop
+| Service | URL |
+|---|---|
+| 🖥️ Frontend App | http://localhost:3000 |
+| ⚙️ Backend API | http://localhost:8000 |
+| 📚 Swagger Docs | http://localhost:8000/docs |
+| 🩺 Health Check | http://localhost:8000/health |
+
+### Step 4 — Stop
 
 ```bash
 docker compose down
@@ -67,171 +111,178 @@ docker compose down
 
 ---
 
-## Environment Variables
+## ✦ Environment Variables Reference
 
 | Variable | Required | Example | Purpose |
 |---|---|---|---|
-| `POSTGRES_USER` | Yes | `postgres` | Postgres username |
-| `POSTGRES_PASSWORD` | Yes | `postgres` | Postgres password |
-| `POSTGRES_DB` | Yes | `production_planner` | Database name |
-| `DATABASE_URL` | Yes | `postgresql+psycopg://postgres:postgres@postgres:5432/production_planner` | SQLAlchemy connection string |
-| `GROQ_API_KEY` | Yes (AI features) | `gsk_...` | Groq API key |
-| `JWT_SECRET_KEY` | Yes | `long-random-secret` | JWT signing key |
-| `JWT_ALGORITHM` | Yes | `HS256` | JWT algorithm |
-| `CORS_ORIGINS` | Yes | `http://localhost:3000,http://127.0.0.1:3000` | Allowed frontend origins |
-| `GROQ_MODEL` | Optional | `mixtral-8x7b-32768` | Override Groq model |
-
-Source of defaults: `.env.example`
+| `GROQ_API_KEY` | ✅ | `gsk_...` | AI inference (also accepts OpenAI/Anthropic keys) |
+| `JWT_SECRET_KEY` | ✅ | `long-random-string` | JWT token signing |
+| `JWT_ALGORITHM` | ✅ | `HS256` | JWT algorithm |
+| `POSTGRES_USER` | ✅ | `postgres` | Database username |
+| `POSTGRES_PASSWORD` | ✅ | `postgres` | Database password |
+| `POSTGRES_DB` | ✅ | `production_planner` | Database name |
+| `DATABASE_URL` | ✅ | `postgresql+psycopg://...` | SQLAlchemy connection string |
+| `CORS_ORIGINS` | ✅ | `http://localhost:3000` | Allowed frontend origins |
+| `GROQ_MODEL` | ⬜ Optional | `mixtral-8x7b-32768` | Override default Groq model |
 
 ---
 
-## CSV Preparation and Upload
+## ✦ Preparing Your CSV
 
 ### Required columns
 
-- `product_name`
-- `daily_capacity`
-- `current_demand`
-- `stock_level`
-- `lead_time_days`
+```
+product_name | daily_capacity | current_demand | stock_level | lead_time_days
+```
 
-### Upload flow
+### Example
 
-1. Login/Register
-2. Create company profile
-3. Open company setup / scenario flow
-4. Upload CSV
-5. Run scenario questions
+```csv
+product_name,daily_capacity,current_demand,stock_level,lead_time_days
+Widget-A,500,420,3000,7
+Widget-B,200,195,800,14
+Widget-C,1000,880,12000,3
+```
 
-### Data quality tips
+### Data quality checklist
 
-- Use consistent product names (no accidental trailing spaces).
-- Keep numeric fields strictly numeric.
-- Use realistic lead times in days.
-
----
-
-## Example Scenario Questions
-
-Use these directly in Scenario Runner:
-
-- `What if demand increases by 10% next month?`
-- `What if demand increases by 20% next month?`
-- `What if demand increases by 50% next month?`
-- `What happens if our main supplier is delayed by 2 weeks?`
-- `How can we reduce overtime by 15% and still meet demand?`
-- `Give me a 7-day prioritized action plan with expected impact.`
+- [ ] Product names are consistent (no trailing spaces, no duplicates)
+- [ ] All numeric fields contain only numbers (no currency symbols)
+- [ ] Lead times are in **days** as whole numbers
+- [ ] No empty rows or missing required columns
 
 ---
 
-## Benchmark Methodology (Current System)
+## ✦ Scenario Questions to Try
 
-Benchmark runs a fixed set of scenario questions through two systems:
+Copy these directly into the Scenario Runner:
 
-- **My Agent**: has company profile + production data + tool chain (`simulate_demand`, `detect_bottlenecks`, `generate_action_plan`)
-- **Default LLM**: plain prompt response, no business data context and no tools
+```
+What if demand increases by 10% next month?
+What if demand increases by 20% next month?
+What if demand increases by 50% next month?
+What happens if our main supplier is delayed by 2 weeks?
+How can we reduce overtime by 15% and still meet demand?
+Give me a 7-day prioritized action plan with expected impact.
+```
 
-### Total Score Formula
+---
 
-```text
+## ✦ Benchmark: Agent vs. Plain LLM
+
+One of ProdIQ's most distinctive features. In Benchmark Mode, the same scenario question is answered by:
+
+- **Your Agent** — has your company profile, production data, and full tool chain
+- **Default LLM** — a plain prompt with no data context and no tools
+
+### Scoring formula
+
+```
 total_score = clamp(sum(layer_scores), min=500, max=9200)
 ```
 
-Where layers are:
+### Scoring layers
 
-1. **Data Specificity** (`0-2500`)
-   - Checks how many real numeric values from production data appear in answer text.
-2. **Bottleneck Accuracy** (`0-2000`)
-   - Compares mentioned product bottlenecks vs mathematically detected ground truth (precision/recall/F1, with penalties).
-3. **Action Specificity** (`0-2000`)
-   - Heuristic scoring for actionable details (product/entity terms, quantities, timeframes, realistic ops actions, prioritization, vague-language penalties).
-4. **Completeness** (`0-2000`)
-   - Question-type checklist coverage (demand/supplier/machine styles).
-5. **Internal Consistency** (`0-1500`)
-   - Cross-checks narrative, bottlenecks, and timeline alignment.
+| Layer | Max Points | What's Measured |
+|---|---|---|
+| **Data Specificity** | 2500 | How many real numeric values from your data appear in the answer |
+| **Bottleneck Accuracy** | 2000 | Precision / recall / F1 vs. mathematically detected ground truth |
+| **Action Specificity** | 2000 | Product terms, quantities, timeframes, realistic ops actions, prioritization |
+| **Completeness** | 2000 | Question-type checklist coverage (demand / supplier / machine scenarios) |
+| **Internal Consistency** | 1500 | Cross-checks narrative, bottlenecks, and timeline alignment |
 
-### Grades
+### Grade thresholds
 
-- `>= 8500`: Excellent
-- `>= 7000`: Good
-- `>= 5500`: Average
-- `>= 4000`: Below Average
-- `< 4000`: Needs Improvement
-
----
-
-## Architecture Decisions (Why this design)
-
-### 1) Tool-driven planning over pure text generation
-- Deterministic simulation/bottleneck/action tools produce auditable outputs.
-- LLM is used for reasoning/narrative on top of computed facts.
-
-### 2) Objective multi-layer benchmark
-- Scoring focuses on measurable quality (numbers, bottleneck correctness, consistency), not style.
-- Makes agent-vs-baseline comparison defensible.
-
-### 3) FastAPI + React split
-- Backend owns data, auth, scoring, and agent orchestration.
-- Frontend focuses on visualization and workflow UX.
-
-### 4) Docker-first local environment
-- Reproducible startup and fewer "works on my machine" issues.
-
-### 5) Postgres persistence
-- Stores companies, production rows, scenarios, benchmark results for history and trend analysis.
+| Score | Grade |
+|---|---|
+| ≥ 8500 | 🟢 Excellent |
+| ≥ 7000 | 🔵 Good |
+| ≥ 5500 | 🟡 Average |
+| ≥ 4000 | 🟠 Below Average |
+| < 4000 | 🔴 Needs Improvement |
 
 ---
 
-## API Documentation
+## ✦ Architecture & Design Decisions
 
-FastAPI auto-generates docs:
+### Why tool-driven planning over pure text generation?
+Deterministic simulation tools (`simulate_demand`, `detect_bottlenecks`, `generate_action_plan`) produce auditable, reproducible outputs. The LLM is used for reasoning and narrative synthesis *on top of* computed facts — not as a replacement for computation.
 
-- Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-- OpenAPI JSON: [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json)
+### Why an objective multi-layer benchmark?
+Scoring targets measurable quality: specific numbers, bottleneck correctness, logical consistency. This makes the agent-vs-baseline comparison defensible and repeatable — not a matter of style preference.
+
+### Why FastAPI + React?
+- Backend owns data integrity, auth, scoring logic, and agent orchestration
+- Frontend focuses purely on visualization, UX workflow, and interactive display
+
+### Why Docker-first?
+Reproducible one-command startup. No "works on my machine" issues across team environments.
+
+### Why PostgreSQL?
+Persistent storage for companies, production rows, scenarios, and benchmark history — enabling trend analysis and historical comparisons over time.
 
 ---
 
-## Project Structure
+## ✦ API Documentation
 
-```text
-production-planner-agent 1.1/
+FastAPI auto-generates interactive docs at runtime:
+
+| Format | URL |
+|---|---|
+| Swagger UI | http://localhost:8000/docs |
+| OpenAPI JSON | http://localhost:8000/openapi.json |
+
+---
+
+## ✦ Project Structure
+
+```
+production-planner-agent/
+│
 ├── backend/
 │   ├── app/
-│   │   ├── agent/        # planner + benchmark + tool orchestration
-│   │   ├── api/          # REST endpoints
-│   │   ├── core/         # config, db, security
-│   │   ├── models/       # SQLAlchemy models
-│   │   ├── schemas/      # request/response schemas
-│   │   └── services/
-│   ├── alembic/
+│   │   ├── agent/          ← planner, benchmark & tool orchestration
+│   │   ├── api/            ← REST endpoints
+│   │   ├── core/           ← config, database, security
+│   │   ├── models/         ← SQLAlchemy ORM models
+│   │   ├── schemas/        ← Pydantic request/response schemas
+│   │   └── services/       ← business logic layer
+│   ├── alembic/            ← database migrations
 │   ├── requirements.txt
 │   └── Dockerfile
+│
 ├── frontend/
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── store/
-│   │   └── types/
+│   │   ├── assets/         ← static assets (logo, icons)
+│   │   ├── components/     ← reusable UI components
+│   │   ├── hooks/          ← custom React hooks
+│   │   ├── pages/          ← route-level page components
+│   │   ├── store/          ← state management
+│   │   └── types/          ← TypeScript interfaces
 │   ├── package.json
 │   └── Dockerfile
-├── docker-compose.yml
-├── .env.example
+│
+├── docker-compose.yml      ← one-command stack definition
+├── .env.example            ← environment variable template
 └── README.md
 ```
 
 ---
 
-## Local Development (Without Docker)
+## ✦ Local Development (Without Docker)
 
 ### Backend
 
 ```bash
 cd backend
 python -m venv .venv
-# Windows PowerShell:
+
+# Activate (macOS/Linux)
+source .venv/bin/activate
+
+# Activate (Windows PowerShell)
 .venv\Scripts\Activate.ps1
+
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -244,18 +295,61 @@ npm install
 npm run dev
 ```
 
-Frontend default: [http://localhost:3000](http://localhost:3000)
+Frontend runs at: http://localhost:3000
 
 ---
 
-## Troubleshooting
+## ✦ Troubleshooting
 
-- **Login/Register image not showing**: verify import filename exactly matches asset name 
-- **Docker healthcheck fails**: confirm containers are up with `docker compose ps`.
-- **Benchmark looks low**: ensure CSV data quality and use specific scenario prompts with numbers/timeframes.
+| Issue | Resolution |
+|---|---|
+| Login/Register image not showing | Verify import filename exactly matches the asset name (case-sensitive) |
+| Docker healthcheck fails | Run `docker compose ps` to confirm all containers are up |
+| Benchmark scores are low | Check CSV data quality and use scenario prompts with specific numbers and timeframes |
+| Port already in use | Change ports in `docker-compose.yml` and update `CORS_ORIGINS` in `.env` |
 
 ---
 
-## License
+## ✦ User Workflow
 
-MIT
+```
+Register / Login
+      │
+      ▼
+Create Company Profile
+      │
+      ▼
+Upload Production CSV
+      │
+      ▼
+Enter Scenario Question ──────────────────┐
+      │                                   │
+      ▼                                   ▼
+  Standard Mode                    Benchmark Mode
+  ─────────────                    ───────────────
+  Simulation Table                 Your Agent score
+  Bottleneck Cards                 vs.
+  Action Timeline          Plain LLM score (no data)
+  Narrative Summary                │
+  PDF Export                       ▼
+                             Layer-by-layer
+                             comparison report
+```
+
+---
+
+## ✦ License
+
+```
+MIT License — free to use, modify, and distribute.
+```
+
+---
+
+<div align="center">
+
+**Built for production teams who need answers backed by data, not guesses.**
+
+[▶ Watch Demo](https://www.loom.com/share/dba6b4b722a84944b26d8c48b4530014)
+
+</div>
