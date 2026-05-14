@@ -14,10 +14,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.api.production import upload_production_data
-from app.models import Base
 from app.models.company import Company
 from app.models.production import ProductionData
 from app.models.user import User
+
+TEST_TABLES = (User.__table__, Company.__table__, ProductionData.__table__)
 
 
 def _upload_file(csv_text: str) -> UploadFile:
@@ -32,7 +33,8 @@ class ProductionUploadTests(unittest.IsolatedAsyncioTestCase):
             poolclass=StaticPool,
             future=True,
         )
-        Base.metadata.create_all(bind=self.engine)
+        for table in TEST_TABLES:
+            table.create(bind=self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine, autocommit=False, autoflush=False)
         self.db = self.SessionLocal()
 
@@ -75,7 +77,8 @@ class ProductionUploadTests(unittest.IsolatedAsyncioTestCase):
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(bind=self.engine)
+        for table in reversed(TEST_TABLES):
+            table.drop(bind=self.engine)
         self.engine.dispose()
 
     async def test_repeated_upload_replaces_company_snapshot_without_duplication(self) -> None:
