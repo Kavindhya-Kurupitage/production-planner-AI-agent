@@ -345,6 +345,8 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
         try:
             plain_response = await get_plain_groq_response(question)
             plain_eval = await score_response(question, plain_response, production_rows)
+        except HTTPException:
+            raise
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Plain model failed on Q{idx}: {exc}")
             plain_response = {"answer": "Plain model failed due to API rate limits during this run."}
@@ -363,6 +365,8 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
         try:
             agent_response = await run_agent(question=question, company_id=company_id, db=db)
             agent_eval = await score_response(question, agent_response, production_rows)
+        except HTTPException:
+            raise
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Agent failed on Q{idx}: {exc}")
             agent_response = {"answer": "Agent run failed due to temporary API throttling."}
