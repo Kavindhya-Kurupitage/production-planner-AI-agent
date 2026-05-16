@@ -13,7 +13,6 @@ os.environ.setdefault("JWT_SECRET_KEY", "test_secret_value_12345")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 
 from app.api.production import upload_production_data  # noqa: E402
-from app.models import Base  # noqa: E402
 from app.models.company import Company  # noqa: E402
 from app.models.production import ProductionData  # noqa: E402
 from app.models.user import User  # noqa: E402
@@ -23,7 +22,9 @@ class ProductionUploadTests(unittest.TestCase):
     def setUp(self) -> None:
         self.engine = create_engine("sqlite+pysqlite:///:memory:", future=True)
         TestingSessionLocal = sessionmaker(bind=self.engine, class_=Session)
-        Base.metadata.create_all(bind=self.engine)
+        User.__table__.create(bind=self.engine)
+        Company.__table__.create(bind=self.engine)
+        ProductionData.__table__.create(bind=self.engine)
         self.db = TestingSessionLocal()
 
         self.user = User(
@@ -49,7 +50,9 @@ class ProductionUploadTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(bind=self.engine)
+        ProductionData.__table__.drop(bind=self.engine)
+        Company.__table__.drop(bind=self.engine)
+        User.__table__.drop(bind=self.engine)
         self.engine.dispose()
 
     def _upload_file(self, csv_text: str) -> UploadFile:
