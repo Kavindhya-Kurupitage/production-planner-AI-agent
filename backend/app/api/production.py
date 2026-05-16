@@ -88,8 +88,15 @@ async def upload_production_data(
                 detail=f"Invalid data at row {index + 2}: {exc}",
             ) from exc
 
-    db.add_all(records_to_insert)
-    db.commit()
+    try:
+        db.query(ProductionData).filter(ProductionData.company_id == company_id).delete(
+            synchronize_session="fetch"
+        )
+        db.add_all(records_to_insert)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
     unique_products = sorted({record.product_name for record in records_to_insert})
     mapping_report = [
