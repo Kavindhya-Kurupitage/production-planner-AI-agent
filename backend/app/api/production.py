@@ -90,7 +90,7 @@ async def upload_production_data(
 
     try:
         db.query(ProductionData).filter(ProductionData.company_id == company_id).delete(
-            synchronize_session=False
+            synchronize_session="fetch"
         )
         db.add_all(records_to_insert)
         db.commit()
