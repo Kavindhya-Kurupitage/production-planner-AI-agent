@@ -15,12 +15,17 @@ from app.services.csv_column_mapping import REQUIRED_FIELDS, map_production_colu
 router = APIRouter(prefix="/companies", tags=["production-data"])
 
 
-def _get_user_company_or_404(db: Session, company_id: int, user_id: int) -> Company:
-    company = (
-        db.query(Company)
-        .filter(Company.id == company_id, Company.owner_id == user_id)
-        .first()
-    )
+def _get_user_company_or_404(
+    db: Session,
+    company_id: int,
+    user_id: int,
+    *,
+    for_update: bool = False,
+) -> Company:
+    query = db.query(Company).filter(Company.id == company_id, Company.owner_id == user_id)
+    if for_update:
+        query = query.with_for_update()
+    company = query.first()
     if not company:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found.")
     return company
@@ -88,6 +93,10 @@ async def upload_production_data(
                 detail=f"Invalid data at row {index + 2}: {exc}",
             ) from exc
 
+    _get_user_company_or_404(db, company_id, current_user.id, for_update=True)
+    db.query(ProductionData).filter(ProductionData.company_id == company_id).delete(
+        synchronize_session=False
+    )
     db.add_all(records_to_insert)
     db.commit()
 
