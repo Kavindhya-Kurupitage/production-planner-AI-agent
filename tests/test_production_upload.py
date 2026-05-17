@@ -20,6 +20,9 @@ from app.models.production import ProductionData
 from app.models.user import User
 
 
+TEST_TABLES = [User.__table__, Company.__table__, ProductionData.__table__]
+
+
 class ProductionUploadTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.engine = create_engine(
@@ -28,7 +31,7 @@ class ProductionUploadTests(unittest.IsolatedAsyncioTestCase):
             poolclass=StaticPool,
             future=True,
         )
-        Base.metadata.create_all(bind=self.engine)
+        Base.metadata.create_all(bind=self.engine, tables=TEST_TABLES)
         session_factory = sessionmaker(bind=self.engine, autocommit=False, autoflush=False, class_=Session)
         self.db = session_factory()
         self.user = User(
@@ -50,7 +53,7 @@ class ProductionUploadTests(unittest.IsolatedAsyncioTestCase):
 
     def tearDown(self) -> None:
         self.db.close()
-        Base.metadata.drop_all(bind=self.engine)
+        Base.metadata.drop_all(bind=self.engine, tables=TEST_TABLES)
         self.engine.dispose()
 
     @staticmethod
