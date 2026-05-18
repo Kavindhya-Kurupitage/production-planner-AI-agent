@@ -88,6 +88,9 @@ async def upload_production_data(
                 detail=f"Invalid data at row {index + 2}: {exc}",
             ) from exc
 
+    db.query(ProductionData).filter(ProductionData.company_id == company_id).delete(
+        synchronize_session=False
+    )
     db.add_all(records_to_insert)
     db.commit()
 
