@@ -4,6 +4,15 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+WEAK_JWT_SECRET_PLACEHOLDERS = {
+    "change-me",
+    "change-me-to-a-long-random-secret",
+    "your-random-secret",
+    "long-random-string",
+    "replace-with-64-hex-characters",
+}
+
+
 class Settings(BaseSettings):
     app_name: str = "Production Planner Agent API"
     api_prefix: str = "/api/v1"
@@ -37,9 +46,17 @@ class Settings(BaseSettings):
     @classmethod
     def validate_jwt_secret_key(cls, value: str) -> str:
         secret = value.strip()
-        if secret in {"", "change-me"} or len(secret) < 16:
-            raise ValueError("JWT_SECRET_KEY must be set to a strong secret (minimum 16 characters).")
-        return value
+        normalized_secret = secret.lower().replace("_", "-").replace(" ", "-")
+        if (
+            secret == ""
+            or len(secret) < 16
+            or normalized_secret in WEAK_JWT_SECRET_PLACEHOLDERS
+        ):
+            raise ValueError(
+                "JWT_SECRET_KEY must be set to a strong, private secret "
+                "(minimum 16 characters; do not use documented placeholders)."
+            )
+        return secret
 
 
 settings = Settings()
