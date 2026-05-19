@@ -84,9 +84,11 @@ Open `.env` and set the required values:
 
 ```env
 GROQ_API_KEY=gsk_...              # or OpenAI / Anthropic key
-JWT_SECRET_KEY=your-random-secret
+JWT_SECRET_KEY=<output-of-openssl-rand-hex-32>
 POSTGRES_PASSWORD=your-db-password
 ```
+
+Generate `JWT_SECRET_KEY` with `openssl rand -hex 32` or another cryptographically secure random source.
 
 ### Step 2 — Launch
 
@@ -116,7 +118,7 @@ docker compose down
 | Variable | Required | Example | Purpose |
 |---|---|---|---|
 | `GROQ_API_KEY` | ✅ | `gsk_...` | AI inference (also accepts OpenAI/Anthropic keys) |
-| `JWT_SECRET_KEY` | ✅ | `long-random-string` | JWT token signing |
+| `JWT_SECRET_KEY` | ✅ | `openssl rand -hex 32` output | JWT token signing |
 | `JWT_ALGORITHM` | ✅ | `HS256` | JWT algorithm |
 | `POSTGRES_USER` | ✅ | `postgres` | Database username |
 | `POSTGRES_PASSWORD` | ✅ | `postgres` | Database password |
