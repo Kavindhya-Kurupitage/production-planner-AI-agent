@@ -15,12 +15,17 @@ from app.services.csv_column_mapping import REQUIRED_FIELDS, map_production_colu
 router = APIRouter(prefix="/companies", tags=["production-data"])
 
 
-def _get_user_company_or_404(db: Session, company_id: int, user_id: int) -> Company:
-    company = (
-        db.query(Company)
-        .filter(Company.id == company_id, Company.owner_id == user_id)
-        .first()
-    )
+def _get_user_company_or_404(
+    db: Session,
+    company_id: int,
+    user_id: int,
+    *,
+    for_update: bool = False,
+) -> Company:
+    query = db.query(Company).filter(Company.id == company_id, Company.owner_id == user_id)
+    if for_update:
+        query = query.with_for_update()
+    company = query.first()
     if not company:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Company not found.")
     return company
@@ -68,11 +73,15 @@ async def upload_production_data(
     mapped = await map_production_columns_async(dataframe)
     dataframe = mapped.dataframe
     records_to_insert: list[ProductionData] = []
+    product_names_seen: set[str] = set()
     for index, row in dataframe.iterrows():
         try:
             product_name = str(row["product_name"]).strip()
             if not product_name:
                 raise ValueError("product_name is empty.")
+            if product_name in product_names_seen:
+                raise ValueError(f"duplicate product_name '{product_name}'.")
+            product_names_seen.add(product_name)
             record = ProductionData(
                 company_id=company_id,
                 product_name=product_name,
@@ -88,6 +97,10 @@ async def upload_production_data(
                 detail=f"Invalid data at row {index + 2}: {exc}",
             ) from exc
 
+    _get_user_company_or_404(db, company_id, current_user.id, for_update=True)
+    db.query(ProductionData).filter(ProductionData.company_id == company_id).delete(
+        synchronize_session=False
+    )
     db.add_all(records_to_insert)
     db.commit()
 
