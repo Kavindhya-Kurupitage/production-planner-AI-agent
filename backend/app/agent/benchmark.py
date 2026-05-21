@@ -345,36 +345,28 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
         try:
             plain_response = await get_plain_groq_response(question)
             plain_eval = await score_response(question, plain_response, production_rows)
+        except HTTPException:
+            raise
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Plain model failed on Q{idx}: {exc}")
-            plain_response = {"answer": "Plain model failed due to API rate limits during this run."}
-            plain_eval = _finalize_score(
-                {
-                    "data_specificity": 250,
-                    "bottleneck_accuracy": 250,
-                    "action_specificity": 300,
-                    "completeness": 350,
-                    "consistency": 300,
-                }
-            )
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Benchmark failed while evaluating the plain model for question {idx}. No result was saved.",
+            ) from exc
         await asyncio.sleep(BENCHMARK_CALL_DELAY_SECONDS)
 
         print(f"[benchmark] Question {idx}/5: running full agent")
         try:
             agent_response = await run_agent(question=question, company_id=company_id, db=db)
             agent_eval = await score_response(question, agent_response, production_rows)
+        except HTTPException:
+            raise
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Agent failed on Q{idx}: {exc}")
-            agent_response = {"answer": "Agent run failed due to temporary API throttling."}
-            agent_eval = _finalize_score(
-                {
-                    "data_specificity": 600,
-                    "bottleneck_accuracy": 500,
-                    "action_specificity": 500,
-                    "completeness": 600,
-                    "consistency": 450,
-                }
-            )
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Benchmark failed while evaluating the planning agent for question {idx}. No result was saved.",
+            ) from exc
         await asyncio.sleep(BENCHMARK_CALL_DELAY_SECONDS)
 
         question_results.append(
