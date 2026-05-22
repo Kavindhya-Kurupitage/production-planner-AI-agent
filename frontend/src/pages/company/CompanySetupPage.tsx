@@ -22,6 +22,7 @@ export function CompanySetupPage() {
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [csvPreviewRows, setCsvPreviewRows] = useState<string[][]>([]);
+  const [createdCompanyId, setCreatedCompanyId] = useState<number | null>(null);
 
   const [form, setForm] = useState<CompanyCreatePayload>({
     name: "",
@@ -66,10 +67,15 @@ export function CompanySetupPage() {
   };
 
   const saveCompany = async () => {
-    const company = await createCompanyMutation.mutateAsync(form);
+    let companyId = createdCompanyId;
+    if (companyId === null) {
+      const company = await createCompanyMutation.mutateAsync(form);
+      companyId = company.id;
+      setCreatedCompanyId(companyId);
+    }
     if (csvFile) {
       await uploadMutation.mutateAsync({
-        companyId: company.id,
+        companyId,
         file: csvFile,
         onProgress: setUploadProgress
       });

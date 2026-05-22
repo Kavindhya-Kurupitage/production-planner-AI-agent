@@ -357,7 +357,7 @@ def _extract_increase_percent(question: str, planner_response: str) -> float:
         parsed = json.loads(planner_response)
         if isinstance(parsed, dict) and "increase_percent" in parsed:
             return float(parsed["increase_percent"])
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError, ValueError):
         pass
 
     percent_match = re.search(r"(-?\d+(?:\.\d+)?)\s*%", question)

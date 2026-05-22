@@ -102,7 +102,14 @@ export function CompanyListPage() {
                 <Button
                   className="w-full gap-1 text-xs"
                   variant="danger"
-                  onClick={() => deleteMutation.mutate(company.id)}
+                  onClick={() => {
+                    const confirmed = window.confirm(
+                      `Delete ${company.name}? This will permanently remove its production data, scenarios, and benchmarks.`
+                    );
+                    if (confirmed) {
+                      deleteMutation.mutate(company.id);
+                    }
+                  }}
                   disabled={deleteMutation.isPending}
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
