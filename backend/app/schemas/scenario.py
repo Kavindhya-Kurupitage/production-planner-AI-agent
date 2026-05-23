@@ -3,9 +3,11 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+MAX_SCENARIO_QUESTION_LENGTH = 2000
+
 
 class ScenarioRunRequest(BaseModel):
-    question: str = Field(min_length=3)
+    question: str = Field(min_length=3, max_length=MAX_SCENARIO_QUESTION_LENGTH)
 
 
 class ScenarioRunResponse(BaseModel):

@@ -9,13 +9,14 @@ from app.services.planner_service import PlannerService
 
 router = APIRouter(prefix="/planner", tags=["planner"])
 planner_service = PlannerService()
+MAX_PLAN_CONSTRAINTS_LENGTH = 2000
 
 
 class PlanRequest(BaseModel):
     product_name: str = Field(min_length=2, max_length=150)
     target_units: int = Field(gt=0)
     timeframe_days: int = Field(gt=0)
-    constraints: str = Field(min_length=3)
+    constraints: str = Field(min_length=3, max_length=MAX_PLAN_CONSTRAINTS_LENGTH)
 
 
 class PlanResponse(BaseModel):
