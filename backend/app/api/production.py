@@ -1,4 +1,5 @@
 from io import StringIO
+from math import isfinite
 
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
@@ -52,6 +53,37 @@ def _parse_csv_upload(csv_file: UploadFile) -> pd.DataFrame:
     return dataframe
 
 
+def _parse_product_name(value: object) -> str:
+    if pd.isna(value):
+        raise ValueError("product_name is required.")
+    product_name = str(value).strip()
+    if not product_name:
+        raise ValueError("product_name is empty.")
+    return product_name
+
+
+def _product_identity(product_name: str) -> str:
+    return " ".join(product_name.casefold().split())
+
+
+def _parse_whole_number(value: object, field_name: str) -> int:
+    if pd.isna(value):
+        raise ValueError(f"{field_name} is required.")
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            raise ValueError(f"{field_name} is required.")
+    try:
+        numeric_value = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field_name} must be a whole number.") from exc
+    if not isfinite(numeric_value) or not numeric_value.is_integer():
+        raise ValueError(f"{field_name} must be a whole number.")
+    if numeric_value < 0:
+        raise ValueError(f"{field_name} cannot be negative.")
+    return int(numeric_value)
+
+
 @router.post("/{company_id}/upload", response_model=UploadResponse)
 async def upload_production_data(
     company_id: int,
@@ -68,18 +100,21 @@ async def upload_production_data(
     mapped = await map_production_columns_async(dataframe)
     dataframe = mapped.dataframe
     records_to_insert: list[ProductionData] = []
+    seen_product_names: set[str] = set()
     for index, row in dataframe.iterrows():
         try:
-            product_name = str(row["product_name"]).strip()
-            if not product_name:
-                raise ValueError("product_name is empty.")
+            product_name = _parse_product_name(row["product_name"])
+            product_identity = _product_identity(product_name)
+            if product_identity in seen_product_names:
+                raise ValueError(f"duplicate product_name '{product_name}'.")
+            seen_product_names.add(product_identity)
             record = ProductionData(
                 company_id=company_id,
                 product_name=product_name,
-                daily_capacity=int(row["daily_capacity"]),
-                current_demand=int(row["current_demand"]),
-                stock_level=int(row["stock_level"]),
-                lead_time_days=int(row["lead_time_days"]),
+                daily_capacity=_parse_whole_number(row["daily_capacity"], "daily_capacity"),
+                current_demand=_parse_whole_number(row["current_demand"], "current_demand"),
+                stock_level=_parse_whole_number(row["stock_level"], "stock_level"),
+                lead_time_days=_parse_whole_number(row["lead_time_days"], "lead_time_days"),
             )
             records_to_insert.append(record)
         except (TypeError, ValueError) as exc:
@@ -88,6 +123,9 @@ async def upload_production_data(
                 detail=f"Invalid data at row {index + 2}: {exc}",
             ) from exc
 
+    db.query(ProductionData).filter(ProductionData.company_id == company_id).delete(
+        synchronize_session=False
+    )
     db.add_all(records_to_insert)
     db.commit()
 
