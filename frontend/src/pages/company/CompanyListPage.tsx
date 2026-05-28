@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CalendarClock, History, Pencil, PlayCircle, Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -6,8 +7,10 @@ import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card, CardBody, CardFooter, CardHeader } from "../../components/ui/Card";
 import { ErrorMessage } from "../../components/ui/ErrorMessage";
+import { Modal } from "../../components/ui/Modal";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { useCompaniesQuery, useCompanyScenariosQuery, useDeleteCompanyMutation } from "../../hooks/useCompany";
+import type { Company } from "../../types/company";
 
 function CompanyCard({ companyId }: { companyId: number }) {
   const scenariosQuery = useCompanyScenariosQuery(companyId);
@@ -25,6 +28,14 @@ function CompanyCard({ companyId }: { companyId: number }) {
 export function CompanyListPage() {
   const companiesQuery = useCompaniesQuery();
   const deleteMutation = useDeleteCompanyMutation();
+  const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
+
+  const confirmDelete = () => {
+    if (!companyToDelete) return;
+    deleteMutation.mutate(companyToDelete.id, {
+      onSuccess: () => setCompanyToDelete(null)
+    });
+  };
 
   if (companiesQuery.isLoading) {
     return (
@@ -102,7 +113,7 @@ export function CompanyListPage() {
                 <Button
                   className="w-full gap-1 text-xs"
                   variant="danger"
-                  onClick={() => deleteMutation.mutate(company.id)}
+                  onClick={() => setCompanyToDelete(company)}
                   disabled={deleteMutation.isPending}
                 >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -119,6 +130,36 @@ export function CompanyListPage() {
           </CardBody>
         </Card>
       ) : null}
+      <Modal
+        isOpen={companyToDelete !== null}
+        title="Delete company?"
+        onClose={() => {
+          if (!deleteMutation.isPending) {
+            setCompanyToDelete(null);
+          }
+        }}
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-[#aaaaaa]">
+            This permanently deletes{" "}
+            <span className="font-semibold text-white">{companyToDelete?.name}</span> and all
+            production data, scenarios, and benchmark results for this company.
+          </p>
+          <p className="text-sm text-danger">This action cannot be undone.</p>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              variant="ghost"
+              onClick={() => setCompanyToDelete(null)}
+              disabled={deleteMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDelete} disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending ? "Deleting..." : "Delete company"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </PageWrapper>
   );
 }
