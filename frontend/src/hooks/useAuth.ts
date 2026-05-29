@@ -40,7 +40,7 @@ export function useAuth() {
       return response.data;
     },
     onSuccess: (data) => {
-      loginAction(data.user, data.tokens.access_token);
+      loginAction(data.user, data.tokens.access_token, data.tokens.refresh_token);
       localStorage.setItem("token", data.tokens.access_token);
       toast.success("Welcome back.");
     },
@@ -55,7 +55,7 @@ export function useAuth() {
       return response.data;
     },
     onSuccess: (data) => {
-      loginAction(data.user, data.tokens.access_token);
+      loginAction(data.user, data.tokens.access_token, data.tokens.refresh_token);
       localStorage.setItem("token", data.tokens.access_token);
       toast.success("Account created successfully.");
     },
@@ -65,8 +65,9 @@ export function useAuth() {
   });
 
   const logout = async () => {
+    const refreshToken = useAuthStore.getState().refreshToken;
     try {
-      await axiosClient.post("/auth/logout");
+      await axiosClient.post("/auth/logout", refreshToken ? { refresh_token: refreshToken } : undefined);
     } catch {
       // ignore network/logout API failures, local logout still applies
     } finally {
