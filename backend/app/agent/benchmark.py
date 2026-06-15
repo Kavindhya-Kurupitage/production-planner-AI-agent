@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
-from typing import Any
+from typing import Any, NoReturn
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -322,6 +322,23 @@ async def score_response(
     return result
 
 
+def _raise_benchmark_failure(model_label: str, question_number: int, exc: Exception) -> NoReturn:
+    status_code = status.HTTP_502_BAD_GATEWAY
+    upstream_detail = str(exc)
+    if isinstance(exc, HTTPException):
+        status_code = exc.status_code
+        upstream_detail = str(exc.detail)
+
+    raise HTTPException(
+        status_code=status_code,
+        detail=(
+            f"Benchmark aborted: {model_label} failed on question {question_number}. "
+            "No benchmark result was saved. "
+            f"Reason: {upstream_detail}"
+        ),
+    ) from exc
+
+
 async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
     """
     Run 5-question benchmark comparing plain Groq vs full planning agent.
@@ -347,16 +364,7 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
             plain_eval = await score_response(question, plain_response, production_rows)
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Plain model failed on Q{idx}: {exc}")
-            plain_response = {"answer": "Plain model failed due to API rate limits during this run."}
-            plain_eval = _finalize_score(
-                {
-                    "data_specificity": 250,
-                    "bottleneck_accuracy": 250,
-                    "action_specificity": 300,
-                    "completeness": 350,
-                    "consistency": 300,
-                }
-            )
+            _raise_benchmark_failure("plain model", idx, exc)
         await asyncio.sleep(BENCHMARK_CALL_DELAY_SECONDS)
 
         print(f"[benchmark] Question {idx}/5: running full agent")
@@ -365,16 +373,7 @@ async def run_full_benchmark(company_id: int, db: Session) -> dict[str, Any]:
             agent_eval = await score_response(question, agent_response, production_rows)
         except Exception as exc:  # noqa: BLE001
             print(f"[benchmark] Agent failed on Q{idx}: {exc}")
-            agent_response = {"answer": "Agent run failed due to temporary API throttling."}
-            agent_eval = _finalize_score(
-                {
-                    "data_specificity": 600,
-                    "bottleneck_accuracy": 500,
-                    "action_specificity": 500,
-                    "completeness": 600,
-                    "consistency": 450,
-                }
-            )
+            _raise_benchmark_failure("agent", idx, exc)
         await asyncio.sleep(BENCHMARK_CALL_DELAY_SECONDS)
 
         question_results.append(
